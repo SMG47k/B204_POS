@@ -1,0 +1,118 @@
+<!-- sales/templates/sales/add_item.html -->
+<!DOCTYPE html>
+<html lang="km">
+<head>
+    <meta charset="UTF-8">
+    <title>Order #{{ order.pk }} — Adding Items</title>
+    <style>
+        body  { font-family: Arial, sans-serif; max-width: 860px; margin: 40px auto; background: #f0f4f8; padding: 0 20px; }
+        nav   { margin-bottom: 20px; }
+        nav a { text-decoration: none; color: #2b6cb0; font-weight: bold; }
+        
+        table { width: 100%; border-collapse: collapse; background: white; border-radius: 10px;
+                overflow: hidden; box-shadow: 0 2px 6px rgba(0,0,0,0.08); margin-bottom: 24px; }
+        th { background: #2b6cb0; color: white; padding: 10px 14px; text-align: left; }
+        td { padding: 10px 14px; border-bottom: 1px solid #e2e8f0; }
+        
+        /* ផ្នែក Discount Management (ដូចរូបភាព image_1e9738.jpg) */
+        .discount-card { 
+            background: #fffaf0; padding: 20px; border-radius: 10px; 
+            border: 2px dashed #f6ad55; margin-bottom: 24px; box-shadow: 0 2px 6px rgba(0,0,0,0.05); 
+        }
+        .discount-card h4 { margin-top: 0; color: #744210; }
+        .discount-card label { display: block; margin-bottom: 4px; font-weight: bold; }
+        .discount-card input { width: 100%; padding: 8px; margin-bottom: 10px; border: 1px solid #cbd5e0; border-radius: 6px; box-sizing: border-box; }
+        
+        .total-section { text-align: right; margin-bottom: 24px; }
+        .total { font-size: 1.5em; font-weight: bold; color: #276749; margin: 0; }
+        
+        form.add { background: white; padding: 20px 24px; border-radius: 10px;
+                    box-shadow: 0 2px 6px rgba(0,0,0,0.08); display: flex; gap: 12px; align-items: flex-end; margin-bottom: 20px; }
+        form.add label { font-weight: bold; display: block; margin-bottom: 4px; }
+        form.add select, form.add input { padding: 8px 10px; border: 1px solid #cbd5e0; border-radius: 6px; font-size: 1em; }
+        
+        .btn { border: none; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.2s; }
+        .btn-add   { background: #2b6cb0; color: white; padding: 9px 22px; }
+        .btn-orange { background: #ed8936; color: white; padding: 10px 20px; width: 100%; }
+        .btn-paid   { background: #276749; color: white; padding: 15px 30px; font-size: 1.1em; flex: 2; }
+        .btn-cancel { background: #e53e3e; color: white; padding: 15px 30px; font-size: 1.1em; flex: 1; }
+        
+        .actions { display: flex; gap: 10px; margin-top: 16px; }
+    </style>
+</head>
+<body>
+    <nav><a href="{% url 'order_list' %}">← Back to Orders</a></nav>
+
+    <h1>Order #{{ order.pk }} — Adding Items</h1>
+    <p>Cashier: <strong>{{ order.cashier }}</strong></p>
+
+    <!-- តារាងទំនិញបច្ចុប្បន្ន -->
+    <table>
+        <thead><tr><th>Product</th><th>Qty</th><th>Unit Price</th><th>Subtotal</th></tr></thead>
+        <tbody>
+        {% for item in items %}
+        <tr>
+            <td>{{ item.product.name }}</td>
+            <td>{{ item.quantity }}</td>
+            <td>${{ item.unit_price }}</td>
+            <td>${{ item.subtotal }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="4" style="color:#888;text-align:center">No items yet.</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- ផ្នែកបញ្ចុះតម្លៃ Discount Management (ដូចរូបភាព image_1e9738.jpg) -->
+    <div class="discount-card">
+        <h4>💰 Discount Management</h4>
+        {% if order.discount %}
+            <p style="color: #c05621; margin-bottom: 10px;">Applied: <strong>{{ order.discount.description }} (-${{ order.discount.amount }})</strong></p>
+        {% else %}
+            <p style="color: #888; font-size: 0.9em; margin-bottom: 10px;">No discount applied yet.</p>
+        {% endif %}
+        
+        <form method="post">
+            {% csrf_token %}
+            {% for field in discount_form %}
+                <div>
+                    <label>{{ field.label }}</label>
+                    {{ field }}
+                </div>
+            {% endfor %}
+            <button class="btn btn-orange" name="apply_discount" type="submit">Apply Discount</button>
+        </form>
+    </div>
+
+    <!-- សរុបតម្លៃ -->
+    <div class="total-section">
+        <p class="total">Order Total: ${{ order.total|floatformat:2 }}</p>
+    </div>
+
+    <!-- ទម្រង់បន្ថែមទំនិញ -->
+    <form class="add" method="post">
+        {% csrf_token %}
+        {% for field in item_form %}
+        <div>
+            <label>{{ field.label }}</label>
+            {{ field }}
+        </div>
+        {% endfor %}
+        <button class="btn btn-add" type="submit">＋ Add Item</button>
+    </form>
+
+    <!-- ប៊ូតុង Cancel និង Complete Payment (ដូចរូបភាព image_1e971d.jpg) -->
+    <div class="actions">
+        <form method="post" style="flex: 1;">
+            {% csrf_token %}
+            <button class="btn btn-cancel" name="cancel_order" type="submit">✖ Cancel Order</button>
+        </form>
+
+        <form method="post" style="flex: 2;">
+            {% csrf_token %}
+            <button class="btn btn-paid" name="mark_paid" type="submit">✔ Complete Payment</button>
+        </form>
+    </div>
+
+</body>
+</html>

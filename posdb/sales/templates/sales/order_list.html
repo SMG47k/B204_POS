@@ -1,0 +1,130 @@
+<!-- sales/templates/sales/order_list.html -->
+<!DOCTYPE html>
+<html lang="km">
+<head>
+    <meta charset="UTF-8">
+    <title>📦 POS — បញ្ជីការបញ្ជាទិញ</title>
+    <style>
+        /* ស្ទីលរួមសម្រាប់ទំព័រ */
+        body { font-family: Arial, sans-serif; max-width: 1000px; margin: 40px auto; padding: 0 20px; background: #f0f4f8; }
+        h1   { color: #1a202c; }
+        
+        /* ស្ទីលសម្រាប់ Navigation Bar */
+        nav  { background: white; padding: 15px 20px; border-radius: 10px; margin-bottom: 25px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        nav a { margin-right: 16px; color: #2b6cb0; text-decoration: none; font-weight: bold; }
+        nav a:hover { text-decoration: underline; }
+
+        /* ស្ទីលសម្រាប់ Dashboard Statistics (ដូចរូបភាព image_1e975a.jpg) */
+        .stats-container {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .stat-card {
+            flex: 1;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            border-top: 5px solid #4a90e2; /* ពណ៌ខៀវដូចរបស់គ្រូ */
+        }
+        .stat-card h3 { margin: 0; font-size: 24px; color: #333; }
+        .stat-card p { margin: 5px 0 0; color: #666; font-size: 14px; font-weight: bold; }
+
+        /* ស្ទីលសម្រាប់តារាងបញ្ជី Order (ដូចរូបភាព image_1e975a.jpg) */
+        .table-container { background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        table { width: 100%; border-collapse: collapse; text-align: left; }
+        th { background-color: #2b6cb0; color: white; padding: 15px; font-size: 0.9em; }
+        td { padding: 15px; border-bottom: 1px solid #edf2f7; font-size: 0.95em; }
+        tr:hover { background-color: #f7fafc; }
+
+        /* ស្ទីលសម្រាប់ Status Badge */
+        .status { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 0.8em; font-weight: bold; }
+        .status-paid { background: #c6f6d5; color: #22543d; }     /* ពណ៌បៃតង */
+        .status-open { background: #feebc8; color: #744210; }     /* ពណ៌ទឹកក្រូច */
+        .status-cancelled { background: #fed7d7; color: #822727; } /* ពណ៌ក្រហម */
+        
+        .empty { color: #888; font-style: italic; text-align: center; padding: 40px; }
+    </style>
+</head>
+<body>
+
+    <!-- ១. របារ Navigation -->
+    <nav>
+        <a href="{% url 'product_list' %}">Products</a>
+        <a href="{% url 'order_list' %}">Orders</a>
+        <a href="{% url 'create_order' %}">＋ New Order</a>
+        <a href="/admin/">Admin</a>
+        <span style="float:right">
+            👤 {{ request.user.username }}
+            <form method="post" action="/accounts/logout/" style="display:inline; margin-left: 10px;">
+                {% csrf_token %}
+                <button type="submit" style="background:none;border:none;color:#2b6cb0;cursor:pointer;padding:0;font-size:1em; font-weight: bold;">
+                    Log Out
+                </button>
+            </form>
+        </span>
+    </nav>
+
+    <h1>📦 បញ្ជីការបញ្ជាទិញ</h1>
+
+    <!-- ២. Dashboard Statistics (ទិន្នន័យបានមកពី views.py) -->
+    <div class="stats-container">
+        <div class="stat-card">
+            <h3>{{ total_orders }}</h3>
+            <p>Total Orders</p>
+        </div>
+        <div class="stat-card">
+            <h3>${{ total_revenue|floatformat:2 }}</h3>
+            <p>Total Revenue</p>
+        </div>
+        <div class="stat-card">
+            <h3>{{ completed_orders }}</h3>
+            <p>Completed</p>
+        </div>
+        <div class="stat-card">
+            <h3>{{ discounted_orders }}</h3>
+            <p>With Discount</p>
+        </div>
+    </div>
+
+    <!-- ៣. តារាងបង្ហាញបញ្ជី Order -->
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Order #</th>
+                    <th>Cashier</th>
+                    <th>Date & Time</th>
+                    <th>Status</th>
+                    <th>Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for order in orders %}
+                <tr>
+                    <td>#{{ order.pk }}</td>
+                    <td>{{ order.cashier.username|default:"unknown" }}</td>
+                    <td>{{ order.created_at|date:"M d, Y • H:i" }}</td>
+                    <td>
+                        <span class="status 
+                            {% if order.status == 'paid' %}status-paid
+                            {% elif order.status == 'open' %}status-open
+                            {% else %}status-cancelled{% endif %}">
+                            {{ order.status|upper }}
+                        </span>
+                    </td>
+                    <td style="font-weight: bold;">${{ order.total|floatformat:2 }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="empty">មិនទាន់មានទិន្នន័យការលក់នៅឡើយទេ។</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+</body>
+</html>
