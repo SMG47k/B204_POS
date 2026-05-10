@@ -154,4 +154,11 @@ LOGOUT_REDIRECT_URL = '/accounts/login/'   # after logout → back to login page
 # With these settings + the root RedirectView, the full navigation cycle is:
 #   /  →  /accounts/login/  →  (log in)  →  /sales/products/
 #   (log out)  →  /accounts/login/
+CSRF_TRUSTED_ORIGINS = [
+    'https://rithsamnang.pythonanywhere.com',
+    'http://rithsamnang.pythonanywhere.com',
+]
+
+SECURE_BROWSER_XSS_FILTER = True
+SECURE_CONTENT_TYPE_NOSNIFF = True
 
